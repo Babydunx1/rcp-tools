@@ -1,668 +1,599 @@
 <!DOCTYPE html>
-<html lang="th">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RCP Extractor - Astro-Nyan Ultimate</title>
+    <title>RCP Extractor - Cats Rule The World</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=JetBrains+Mono:wght@400;700&family=Sarabun:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;800&family=JetBrains+Mono:wght@400;800&family=Press+Start+2P&display=swap" rel="stylesheet">
     
     <style>
-
-        
         :root {
-            /* Universe Palette */
-            --bg-deep: #02020a;
-            --glass-surface: rgba(20, 20, 35, 0.5);
-            --glass-border: rgba(100, 200, 255, 0.1);
-            --neon-cyan: #00f2ff;
-            --neon-pink: #ff00de;
-            --text-main: #ffffff;
-            --text-muted: #8b9bb4;
+            /* --- THEME: NEON GOD --- */
+            --void-bg: #020205;
+            --neon-cyan: #00f3ff;
+            --neon-magenta: #ff0099;
+            --neon-purple: #bc13fe;
+            --neon-lime: #ccff00;
+            --glass-panel: rgba(10, 10, 20, 0.9);
+            --glass-border: rgba(0, 243, 255, 0.3);
             
-            --font-ui: 'Outfit', 'Sarabun', sans-serif;
+            /* --- NYAN PALETTE --- */
+            --nyan-grey: #999999;
+            --nyan-tart: #ffcc99;
+            --nyan-pink: #ff99ff;
+            --nyan-red: #ff0000;
+            --nyan-cheek: #ff9999;
+            
+            --font-ui: 'Rajdhani', sans-serif;
+            --font-pixel: 'Press Start 2P', cursive;
             --font-code: 'JetBrains Mono', monospace;
         }
 
+        * { box-sizing: border-box; outline: none; user-select: none; }
+
         body {
-            margin: 0; height: 100vh; background-color: var(--bg-deep); color: var(--text-main);
-            font-family: var(--font-ui); overflow: hidden; display: flex; justify-content: center; align-items: center; user-select: none;
+            margin: 0; height: 100vh; width: 100vw;
+            background: radial-gradient(ellipse at center, #150025 0%, #050510 60%, #000000 100%);
+            color: #fff;
+            font-family: var(--font-ui); 
+            overflow: hidden; 
+            display: flex; justify-content: center; align-items: center; 
+            perspective: 1500px;
         }
 
-        /* --- Scrollbar --- */
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.3); border-radius: 4px; }
-        ::-webkit-scrollbar-thumb { background: linear-gradient(180deg, var(--neon-cyan), var(--neon-pink)); border-radius: 4px; box-shadow: 0 0 10px var(--neon-cyan); }
-        ::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg, #fff, var(--neon-cyan)); }
+        /* 1. NEON STAR ENGINE */
+        #warpCanvas {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -20;
+        }
 
-        /* --- Background Layers --- */
-        #starCanvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: -10; }
-        .nebula { position: absolute; width: 100vw; height: 100vh; background: radial-gradient(circle at 20% 80%, rgba(255, 0, 222, 0.1), transparent 40%), radial-gradient(circle at 80% 20%, rgba(0, 242, 255, 0.1), transparent 40%); z-index: -9; animation: nebulaPulse 10s infinite alternate; }
-        @keyframes nebulaPulse { 0% { opacity: 0.5; } 100% { opacity: 0.8; } }
+        /* 2. SWARM LAYER */
+        #swarmLayer {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -10; pointer-events: none;
+            transform-style: preserve-3d;
+        }
+        .flying-nyan {
+            position: absolute; top: 50%; left: 50%;
+            transform-style: preserve-3d; will-change: transform;
+        }
 
-        /* --- CSS ASTRO-NYAN LAYER (Background) --- */
-        #astroLayer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: -5; overflow: hidden; }
+        /* 3. LAYOUT WRAPPERS (ANIMATION ISOLATION) */
+        #shake-layout {
+            display: flex; justify-content: center; align-items: center;
+            width: 100%; height: 100%;
+            pointer-events: none; /* Pass clicks to UI */
+        }
+
+        /* UI FRAME */
+        .holo-interface {
+            width: 95%; max-width: 1200px; height: 85vh; max-height: 850px;
+            background: var(--glass-panel);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            box-shadow: 
+                0 0 100px rgba(0, 243, 255, 0.05),
+                0 20px 50px rgba(0,0,0,0.8),
+                inset 0 0 100px rgba(0,0,0,0.6);
+            display: flex; flex-direction: column;
+            position: relative; z-index: 10;
+            pointer-events: auto;
+            transform-origin: center center;
+            transition: transform 0.1s;
+        }
+
+        /* --- ANIMATIONS --- */
         
-        /* Container for the floating animation */
-        .astro-nyan-wrapper {
-            position: absolute;
-            will-change: transform;
-            /* Default Size Override by JS */
-            width: 150px; height: 180px; 
+        /* 1. RUMBLE LOOP (New! สั่นตลอดตอนลาก) */
+        .effect-rumble {
+            animation: rumbleLoop 0.1s linear infinite;
+        }
+        @keyframes rumbleLoop {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            25% { transform: translate(-2px, 1px) rotate(-0.3deg); }
+            50% { transform: translate(1px, -2px) rotate(0.3deg); }
+            75% { transform: translate(-1px, -1px) rotate(-0.3deg); }
+            100% { transform: translate(2px, 1px) rotate(0.3deg); }
         }
 
-        /* =========================================
-           CSS ART: THE ASTRO-NYAN (Detailed Code)
-           ========================================= */
-        .nyan-box { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; }
-
-        /* 1. Jetpack */
-        .jetpack {
-            position: absolute; top: 30%; left: 5%; width: 90%; height: 50%;
-            background: #95a5a6; border-radius: 20px; z-index: 1;
-            box-shadow: inset -5px -5px 15px rgba(0,0,0,0.3);
-            border: 2px solid #7f8c8d;
+        /* 2. IMPACT SHAKE (สั่นแรงตอนปล่อย) */
+        .effect-shake {
+            animation: shakeHard 0.5s cubic-bezier(.36,.07,.19,.97) both;
         }
-        .thruster { position: absolute; bottom: -10px; width: 25px; height: 15px; background: #34495e; border-radius: 4px; }
-        .thruster.left { left: 15px; } .thruster.right { right: 15px; }
-        
-        /* Flames (Animated) */
-        .flame {
-            position: absolute; top: 100%; width: 18px; height: 30px;
-            background: linear-gradient(to bottom, #f1c40f, #e74c3c, transparent);
-            border-radius: 0 0 10px 10px; opacity: 0.8;
-            animation: burn 0.1s infinite alternate;
+        @keyframes shakeHard {
+            10%, 90% { transform: translate3d(-5px, 0, 0); }
+            20%, 80% { transform: translate3d(10px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-10px, 0, 0); }
+            40%, 60% { transform: translate3d(10px, 0, 0); }
         }
-        .flame.left { left: 18px; } .flame.right { right: 18px; animation-delay: 0.05s; }
-        @keyframes burn { 0% { height: 30px; transform: scaleX(1); } 100% { height: 45px; transform: scaleX(0.8); } }
 
-        /* 2. Body Suit */
-        .suit-body {
-            position: absolute; top: 35%; left: 15%; width: 70%; height: 50%;
-            background: #ecf0f1; border-radius: 40px; z-index: 5;
-            box-shadow: inset -10px -5px 20px rgba(0,0,0,0.1);
-            border: 3px solid #bdc3c7;
+        /* 3. SUCTION (ดูดวูบ) */
+        .effect-suction {
+            animation: suctionWarp 0.4s ease-in-out forwards;
         }
-        .chest-panel {
-            position: absolute; top: 40%; left: 25%; width: 50%; height: 20px;
-            background: linear-gradient(90deg, var(--neon-cyan), var(--neon-pink));
-            border-radius: 6px; box-shadow: 0 0 10px var(--neon-cyan);
-            animation: panelGlow 2s infinite alternate;
+        @keyframes suctionWarp {
+            0% { transform: scale(1); filter: brightness(1); }
+            40% { transform: scale(0.9) translateZ(-100px); filter: brightness(1.5); }
+            100% { transform: scale(1); filter: brightness(1); }
         }
-        @keyframes panelGlow { 0% { opacity: 0.6; } 100% { opacity: 1; } }
 
-        /* 3. Limbs */
-        .limb {
-            position: absolute; background: #ecf0f1; border: 3px solid #bdc3c7; border-radius: 15px; z-index: 4;
+        /* RGB Border */
+        .holo-interface::before {
+            content: ''; position: absolute; inset: -2px; z-index: -1;
+            background: linear-gradient(180deg, var(--neon-cyan), transparent 20%, transparent 80%, var(--neon-magenta));
+            border-radius: 24px; opacity: 0.8;
+            filter: blur(2px);
+            animation: borderBreath 4s infinite alternate;
         }
-        .arm { width: 25px; height: 50px; top: 40%; }
-        .arm.left { left: 0; transform: rotate(30deg); transform-origin: top right; animation: waveLeft 3s infinite ease-in-out; }
-        .arm.right { right: 0; transform: rotate(-30deg); transform-origin: top left; animation: waveRight 4s infinite ease-in-out; }
-        .leg { width: 25px; height: 40px; bottom: 0; z-index: 3; }
-        .leg.left { left: 25%; } .leg.right { right: 25%; }
+        @keyframes borderBreath { from { opacity: 0.5; filter: blur(2px); } to { opacity: 1; filter: blur(5px); } }
 
-        @keyframes waveLeft { 0%, 100% { transform: rotate(30deg); } 50% { transform: rotate(50deg); } }
-        @keyframes waveRight { 0%, 100% { transform: rotate(-30deg); } 50% { transform: rotate(-50deg); } }
+        /* HEADER */
+        header {
+            padding: 25px 40px; display: flex; justify-content: space-between; align-items: center;
+            background: rgba(0,0,0,0.2); border-radius: 24px 24px 0 0;
+            position: relative; overflow: hidden;
+        }
+        header::after {
+            content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 3px;
+            background: linear-gradient(90deg, #f00, #ff9900, #ff0, #3f0, #09f, #63f, #f00);
+            background-size: 200% 100%; animation: rainbowSlide 2s linear infinite;
+            box-shadow: 0 0 10px rgba(255,255,255,0.5);
+        }
+        @keyframes rainbowSlide { 0% { background-position: 0 0; } 100% { background-position: 200% 0; } }
 
-        /* 4. Helmet & Head */
-        .helmet {
-            position: absolute; top: 0; left: 5%; width: 90%; height: 50%;
-            background: #ecf0f1; border-radius: 50%; z-index: 10;
-            border: 4px solid #bdc3c7;
+        .brand h1 { 
+            margin: 0; font-size: 2.5rem; font-weight: 800; letter-spacing: 3px;
+            color: #fff; text-transform: uppercase; position: relative;
+            text-shadow: 0 0 20px rgba(0, 243, 255, 0.5);
+        }
+        .brand h1::before, .brand h1::after {
+            content: attr(data-text); position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0.8;
+        }
+        .brand h1::before { color: #0ff; z-index: -1; animation: glitch-1 2.5s infinite linear alternate-reverse; }
+        .brand h1::after { color: #f0f; z-index: -2; animation: glitch-2 3s infinite linear alternate-reverse; }
+        @keyframes glitch-1 { 0% { clip: rect(30px, 999px, 10px, 0); transform: translate(-2px,0); } 100% { clip: rect(10px, 999px, 80px, 0); transform: translate(1px,0); } }
+        @keyframes glitch-2 { 0% { clip: rect(10px, 999px, 90px, 0); transform: translate(2px,0); } 100% { clip: rect(40px, 999px, 70px, 0); transform: translate(-1px,0); } }
+
+        .brand span { font-family: var(--font-pixel); font-size: 0.7rem; color: var(--neon-magenta); margin-left: 5px; letter-spacing: 1px; }
+
+        .toggle-switch {
+            display: flex; align-items: center; gap: 12px; cursor: pointer;
+            padding: 8px 16px; border: 1px solid rgba(255,255,255,0.1); border-radius: 50px;
+            background: rgba(0,0,0,0.3); transition: 0.3s;
+        }
+        .toggle-switch:hover { border-color: var(--neon-cyan); box-shadow: 0 0 15px rgba(0, 243, 255, 0.3); }
+        .toggle-switch.active { background: rgba(0, 243, 255, 0.1); border-color: var(--neon-cyan); }
+        .t-dot { width: 10px; height: 10px; background: #666; border-radius: 50%; transition: 0.3s; }
+        .toggle-switch.active .t-dot { background: var(--neon-cyan); box-shadow: 0 0 10px var(--neon-cyan); }
+
+        /* WORKSPACE */
+        .workspace { flex: 1; padding: 40px; display: flex; gap: 40px; overflow: hidden; position: relative; }
+
+        /* DROP PORTAL */
+        .drop-portal {
+            flex: 1; position: relative;
+            border: 2px dashed rgba(0, 243, 255, 0.3); border-radius: 20px;
+            background: radial-gradient(circle at center, rgba(0, 243, 255, 0.05) 0%, rgba(20, 10, 40, 0.6) 100%);
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.5), inset 0 0 50px rgba(0, 243, 255, 0.02);
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
             overflow: hidden;
-            box-shadow: inset -5px -10px 15px rgba(0,0,0,0.2);
+            animation: portalPulse 3s infinite alternate;
         }
-        
-        .visor-glass {
-            position: absolute; top: 10%; left: 10%; width: 80%; height: 80%;
-            background: linear-gradient(135deg, rgba(20,20,50,0.8), rgba(0,0,0,0.9));
-            border-radius: 50%;
-            border: 3px solid #95a5a6;
-            overflow: hidden;
-            z-index: 11;
-        }
-        .reflection {
-            position: absolute; top: 15%; left: 15%; width: 25%; height: 15%;
-            background: rgba(255,255,255,0.6); border-radius: 50%;
-            transform: rotate(-45deg); z-index: 20;
+        @keyframes portalPulse {
+            0% { border-color: rgba(0, 243, 255, 0.3); box-shadow: inset 0 0 20px rgba(0, 243, 255, 0.05); }
+            100% { border-color: rgba(188, 19, 254, 0.5); box-shadow: inset 0 0 50px rgba(188, 19, 254, 0.1); }
         }
 
-        /* 5. The Cat Face (Inside Visor) */
-        .cat-head {
-            position: absolute; bottom: -5px; left: 15%; width: 70%; height: 75%;
-            background: #e67e22; /* Orange Cat */
-            border-radius: 40% 40% 45% 45%;
-            z-index: 12;
+        .drop-portal.drag-active {
+            border-color: var(--neon-cyan); 
+            background: radial-gradient(circle at center, rgba(0, 243, 255, 0.2), #000);
+            box-shadow: 0 0 80px rgba(0, 243, 255, 0.5), inset 0 0 100px rgba(0, 243, 255, 0.3);
+            transform: scale(0.96);
+            animation: none;
         }
-        /* Ears */
-        .cat-ears { position: absolute; top: -15px; width: 100%; height: 30px; }
-        .ear {
-            position: absolute; bottom: 0; width: 0; height: 0;
-            border-left: 15px solid transparent; border-right: 15px solid transparent;
-            border-bottom: 25px solid #e67e22;
+        .drop-portal.drag-active .nyan-unit {
+            animation: hyperSpin 0.3s linear infinite !important;
+            filter: drop-shadow(0 0 30px var(--neon-cyan));
+            transform: scale(1.3); 
         }
-        .ear.left { left: 0; transform: rotate(-20deg); }
-        .ear.right { right: 0; transform: rotate(20deg); }
+        @keyframes hyperSpin { 0% { transform: rotate(0deg) scale(1.3); } 100% { transform: rotate(360deg) scale(1.3); } }
 
-        /* Stripes (ลายแมวส้ม) */
-        .stripe {
-            position: absolute; top: 5px; left: 50%; transform: translateX(-50%);
-            width: 0; height: 0;
-            border-left: 5px solid transparent; border-right: 5px solid transparent;
-            border-top: 15px solid #d35400;
-        }
+        /* NYAN CAT (PIXEL PERFECT) */
+        .nyan-unit { position: relative; width: 150px; height: 100px; animation: float 3s ease-in-out infinite; transition: 0.3s; }
+        .nyan-scale { transform: scale(4); position: absolute; top: 50%; left: 50%; }
+        .n-rainbow { position: absolute; top: -6px; left: -40px; width: 44px; height: 18px; background: linear-gradient(to bottom, #f00 16%, #ff9900 32%, #ff0 48%, #3f0 64%, #09f 80%, #63f 100%); animation: rainbowMove 0.4s steps(2) infinite; }
+        @keyframes rainbowMove { 0% { left: -40px; } 100% { left: -44px; } }
+        .n-tail { position: absolute; top: 0; left: -14px; width: 15px; height: 12px; animation: tailWag 0.4s steps(4) infinite; }
+        .n-tail::before { content: ''; position: absolute; width: 1px; height: 1px; box-shadow: 2px 3px #000, 3px 3px #000, 4px 3px #000, 1px 4px #000, 2px 4px #999, 3px 4px #999, 4px 4px #999, 5px 4px #000, 0px 5px #000, 1px 5px #999, 2px 5px #999, 3px 5px #999, 4px 5px #999, 5px 5px #000, 0px 6px #000, 1px 6px #999, 2px 6px #999, 3px 6px #999, 4px 6px #999, 5px 6px #000, 1px 7px #000, 2px 7px #999, 3px 7px #999, 4px 7px #000, 5px 7px #000; }
+        @keyframes tailWag { 0% { transform: translateX(0); } 50% { transform: translateX(-2px); } 100% { transform: translateX(0); } }
+        .n-body { position: absolute; top: -10px; left: -10px; width: 22px; height: 15px; background: #ffcc99; border: 1px solid #000; }
+        .n-body-pink { position: absolute; top: 1px; left: 1px; width: 18px; height: 11px; background: #ff99ff; }
+        .n-sprinkles::after { content: ''; position: absolute; width: 1px; height: 1px; color: #f00; box-shadow: 3px 2px, 8px 3px, 12px 1px, 4px 8px, 9px 7px, 14px 9px; }
+        .n-head { position: absolute; top: -5px; left: 6px; width: 16px; height: 10px; background: #999; border: 1px solid #000; z-index: 5; }
+        .n-head::before { content: ''; position: absolute; top: -3px; left: 0; width: 1px; height: 1px; color: #999; border-left: 1px solid #000; border-right: 1px solid #000; border-top: 1px solid #000; box-shadow: 1px 1px, 12px 0 0 0 #999, 12px 0 0 -1px #000; }
+        .n-face::after { content: ''; position: absolute; width: 1px; height: 1px; box-shadow: 2px 2px #000, 3px 2px #000, 9px 2px #000, 10px 2px #000, 6px 3px #000, 1px 4px #ff9999, 2px 4px #ff9999, 10px 4px #ff9999, 11px 4px #ff9999; }
+        .n-legs { position: absolute; bottom: -12px; left: -10px; width: 25px; height: 5px; animation: run 0.2s steps(4) infinite; }
+        .n-legs::before { content: ''; position: absolute; width: 1px; height: 1px; color: #999; border: 1px solid #000; box-shadow: 1px 0, 3px 0 #000, 4px 0, 15px 0 #000, 16px 0, 19px 0 #000, 20px 0; }
+        @keyframes run { 0% { transform: translateX(0); } 50% { transform: translateX(-1px); } 100% { transform: translateX(0); } }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
 
-        /* Face Features */
-        .face-features { position: absolute; top: 35%; width: 100%; text-align: center; }
-        
-        /* Eyes (Blinking & Moving) */
-        .eyes-row { display: flex; justify-content: center; gap: 15px; }
-        .eye {
-            width: 14px; height: 14px; background: #000; border-radius: 50%;
-            position: relative;
-            animation: catBlink 4s infinite;
-        }
-        .eye::after { content: ''; position: absolute; top: 3px; left: 3px; width: 5px; height: 5px; background: #fff; border-radius: 50%; }
-        
-        @keyframes catBlink { 0%, 96%, 100% { transform: scaleY(1); } 98% { transform: scaleY(0.1); } }
+        .drop-hint { margin-top: 40px; text-align: center; }
+        .drop-hint h3 { font-size: 1.5rem; letter-spacing: 2px; }
+        .drop-hint p { font-family: var(--font-pixel); color: var(--neon-cyan); font-size: 0.6rem; margin-top: 10px; }
 
-        /* Snout */
-        .snout { margin-top: 2px; }
-        .nose { width: 8px; height: 5px; background: #ffa07a; border-radius: 4px; margin: 0 auto; }
-        .mouth {
-            width: 16px; height: 8px; margin: 0 auto;
-            border-bottom: 2px solid #000; border-radius: 0 0 10px 10px;
-        }
-        /* Cheek Blush */
-        .blush {
-            position: absolute; top: 12px; width: 10px; height: 6px; background: #ff9ff3; border-radius: 50%; opacity: 0.6;
-        }
-        .blush.left { left: 10px; } .blush.right { right: 10px; }
+        /* DATA LIST */
+        .data-list { flex: 0; width: 0; opacity: 0; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; overflow-y: auto; padding: 0; transition: 0.4s ease; }
+        .workspace.active .drop-portal { flex: 0 0 350px; }
+        .workspace.active .data-list { flex: 1; width: auto; opacity: 1; padding: 20px; border-color: var(--neon-cyan); }
+        .file-item { display: flex; align-items: center; justify-content: space-between; padding: 12px; margin-bottom: 8px; background: rgba(255,255,255,0.05); border-radius: 6px; border-left: 3px solid transparent; }
+        .file-item:hover { background: rgba(0, 243, 255, 0.1); border-left-color: var(--neon-cyan); }
+        .f-name { font-family: var(--font-code); font-size: 0.85rem; }
 
-
-        /* --- Foreground Launch Effect (Rocket Layer) --- */
-        #rocketLayer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1000; overflow: hidden; }
-        .squad-cat {
-            position: absolute; bottom: -200px; /* Start below screen */
-            /* Reusing the exact same structure via JS cloning */
-            transform-origin: center;
-        }
-
-        /* --- Main App UI (คงเดิมตามสั่ง) --- */
-        .app-container { width: 95%; max-width: 1200px; height: 90vh; background: var(--glass-surface); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px); border: 1px solid var(--glass-border); border-radius: 32px; box-shadow: 0 0 50px rgba(0, 242, 255, 0.1); display: flex; flex-direction: column; overflow: hidden; position: relative; z-index: 10; }
-        header { padding: 25px 40px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--glass-border); background: rgba(0,0,0,0.3); }
-        .brand h1 { margin: 0; font-size: 1.8rem; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; background: linear-gradient(90deg, #fff, var(--neon-cyan)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .brand span { color: var(--neon-pink); font-size: 0.9rem; font-weight: 600; letter-spacing: 3px; margin-left: 10px; }
-        .workspace { flex: 1; display: flex; flex-direction: column; position: relative; overflow: hidden; padding: 20px; }
-        
-        .drop-zone { flex: 1; border: 2px dashed rgba(255,255,255,0.15); border-radius: 24px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; background: rgba(255,255,255,0.01); transition: all 0.4s ease; cursor: pointer; }
-        .drop-zone:hover { border-color: var(--neon-cyan); background: rgba(0, 242, 255, 0.05); transform: scale(0.995); }
-        .drop-icon { font-size: 80px; margin-bottom: 20px; filter: drop-shadow(0 0 20px var(--neon-cyan)); animation: bounce 2s infinite; }
-        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
-        
-        .workspace.has-files { flex-direction: row; gap: 20px; }
-        .workspace.has-files .drop-zone { flex: 0 0 250px; height: 100%; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.2); }
-        .workspace.has-files .drop-icon { font-size: 40px; margin-bottom: 10px; }
-        .workspace.has-files .drop-text h3 { font-size: 1rem; }
-        .workspace.has-files .drop-text p { font-size: 0.8rem; opacity: 0.7; }
-
-        .list-area { flex: 1; background: rgba(0,0,0,0.2); border-radius: 24px; border: 1px solid var(--glass-border); overflow-y: auto; padding: 20px; opacity: 0; transition: 0.5s; }
-        .workspace.has-files .list-area { opacity: 1; }
-
-        .file-item { display: flex; align-items: center; padding: 15px 20px; margin-bottom: 10px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; transition: 0.2s; }
-        .file-item:hover { background: rgba(255,255,255,0.08); transform: translateX(5px); border-color: var(--neon-cyan); }
-        .f-idx { font-family: var(--font-code); color: var(--neon-pink); font-weight: bold; width: 40px; font-size: 1.1rem; }
-        .f-name { font-family: var(--font-code); color: #fff; font-size: 1rem; letter-spacing: 0.5px; }
-
-        .control-bar { padding: 25px 40px; background: rgba(0,0,0,0.4); border-top: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center; }
-        .btn { border: none; padding: 14px 32px; border-radius: 16px; font-family: var(--font-ui); font-weight: 800; font-size: 1rem; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 10px; text-transform: uppercase; letter-spacing: 1px; }
+        /* FOOTER */
+        .control-bar { padding: 25px 40px; background: rgba(0,0,0,0.3); border-top: 1px solid rgba(255,255,255,0.1); border-radius: 0 0 24px 24px; display: flex; justify-content: space-between; align-items: center; }
+        .status { font-family: var(--font-code); color: #888; font-size: 0.8rem; display: flex; align-items: center; gap: 8px; }
+        .dot { width: 8px; height: 8px; background: #444; border-radius: 50%; }
+        .status.ready { color: var(--neon-cyan); }
+        .status.ready .dot { background: #0f0; box-shadow: 0 0 10px #0f0; }
+        .btn-group { display: flex; gap: 15px; }
+        .btn { border: none; padding: 14px 28px; font-family: var(--font-ui); font-weight: 700; font-size: 1rem; text-transform: uppercase; cursor: pointer; border-radius: 6px; letter-spacing: 1px; transition: 0.2s; }
         .btn-clear { background: rgba(255, 50, 50, 0.1); color: #ff5555; border: 1px solid rgba(255, 50, 50, 0.3); }
-        .btn-clear:hover { background: rgba(255, 50, 50, 0.2); box-shadow: 0 0 20px rgba(255, 50, 50, 0.2); }
-        .btn-copy { background: linear-gradient(135deg, var(--neon-cyan), #006aff); color: #000; box-shadow: 0 0 30px rgba(0, 242, 255, 0.4); position: relative; overflow: hidden; font-size: 1.2rem; }
-        .btn-copy:hover { transform: translateY(-3px); box-shadow: 0 0 50px rgba(0, 242, 255, 0.6); }
-        .btn-copy:active { transform: scale(0.95); }
+        .btn-clear:hover { background: rgba(255, 50, 50, 0.3); box-shadow: 0 0 15px rgba(255, 0, 0, 0.4); }
+        .btn-warp { background: var(--neon-cyan); color: #000; box-shadow: 0 0 20px rgba(0, 243, 255, 0.4); clip-path: polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%); }
+        .btn-warp:hover { transform: translateY(-2px); background: #fff; box-shadow: 0 0 40px rgba(0, 243, 255, 0.8); }
 
-        .toggle-btn { display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 10px 20px; border-radius: 50px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); transition: 0.3s; }
-        .toggle-btn.active { border-color: var(--neon-cyan); background: rgba(0, 242, 255, 0.1); }
-        .t-dot { width: 12px; height: 12px; background: #555; border-radius: 50%; transition: 0.3s; }
-        .toggle-btn.active .t-dot { background: var(--neon-cyan); box-shadow: 0 0 10px var(--neon-cyan); }
-        #hiddenOutput { position: absolute; left: -9999px; }
-
-        
-
-        /* --- 1. EFFECTS (คงเดิม) --- */
-    @keyframes glitch-anim-1 {
-        0% { clip-path: inset(20% 0 80% 0); transform: translate(-2px, 1px); }
-        20% { clip-path: inset(60% 0 10% 0); transform: translate(2px, -1px); }
-        40% { clip-path: inset(40% 0 50% 0); transform: translate(-2px, 2px); }
-        60% { clip-path: inset(80% 0 5% 0); transform: translate(2px, -2px); }
-        80% { clip-path: inset(10% 0 70% 0); transform: translate(-1px, 1px); }
-        100% { clip-path: inset(30% 0 60% 0); transform: translate(1px, -1px); }
-    }
-    .glitch-active { position: relative; }
-    .glitch-active::before, .glitch-active::after {
-        content: attr(data-text); position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-deep);
-    }
-    .glitch-active::before {
-        left: 2px; text-shadow: -1px 0 #ff00de; clip: rect(24px, 550px, 90px, 0);
-        animation: glitch-anim-1 0.3s infinite linear alternate-reverse;
-    }
-    .glitch-active::after {
-        left: -2px; text-shadow: -1px 0 #00f2ff; clip: rect(85px, 550px, 140px, 0);
-        animation: glitch-anim-1 0.3s infinite linear alternate-reverse; animation-delay: -0.1s;
-    }
-
-    /* --- 2. DROP ZONE WARP (คงเดิม) --- */
-    .drop-zone.warp-active {
-        border-color: var(--neon-pink) !important;
-        background: rgba(255, 0, 222, 0.15) !important;
-        box-shadow: 0 0 50px var(--neon-pink), inset 0 0 20px var(--neon-pink);
-        transform: scale(1.02);
-    }
-    .drop-zone.warp-active .drop-icon { animation: spinHole 0.5s infinite linear !important; font-size: 100px; color: var(--neon-pink); }
-    @keyframes spinHole { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-    /* --- 3. MOUSE TRAIL (คงเดิม) --- */
-    .mouse-particle {
-        position: absolute; pointer-events: none; z-index: 9999; width: 6px; height: 6px; border-radius: 50%;
-        background: white; box-shadow: 0 0 6px white; animation: fadeParticle 0.6s forwards;
-    }
-    @keyframes fadeParticle { 0% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: scale(0) translate(0, 20px); } }
-
-    /* --- 4. SHAKE (คงเดิม) --- */
-    .shake-hard { animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; }
-    @keyframes shake {
-        10%, 90% { transform: translate3d(-2px, 2px, 0) rotate(1deg); }
-        20%, 80% { transform: translate3d(4px, -4px, 0) rotate(-1deg); }
-        30%, 50%, 70% { transform: translate3d(-8px, 6px, 0) rotate(2deg); }
-        40%, 60% { transform: translate3d(8px, -6px, 0) rotate(-2deg); }
-    }
-
-    /* --- 5. NYAN STORM (แก้ใหม่ให้เห็นชัดๆ) --- */
-    .nyan-boom {
-        position: fixed; /* ใช้ fixed เพื่อให้หลุดจาก container เดิม */
-        z-index: 10000; /* ทับทุกเลเยอร์ */
-        width: 120px; /* บังคับขนาดให้ใหญ่พอ */
-        height: 140px;
-        pointer-events: none;
-        will-change: transform;
-        /* เริ่มต้นที่จุดกลาง (จะถูก override ด้วย JS) */
-        left: 0; top: 0;
-    }
-    
-    /* อนิเมชั่นแมวบินว่อน */
-    @keyframes chaosFly {
-        0% {
-            opacity: 1;
-            transform: translate(-50%, -50%) scale(0.2) rotate(0deg);
-        }
-        20% {
-             /* ขยายตัวอย่างรวดเร็ว */
-            transform: translate(-50%, -50%) scale(1.5) rotate(var(--rot-start));
-        }
-        100% {
-            opacity: 0;
-            /* บินไปตามทิศทางที่สุ่มไว้ (tx, ty) + หมุนติ้ว (rot-end) */
-            transform: translate(var(--tx), var(--ty)) scale(0) rotate(var(--rot-end));
-        }
-    }
-
-    /* --- Nyan-Orb Animation (Lightweight) --- */
-    .planet-container {
-        position: relative;
-        width: 80px;
-        height: 80px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-
-    /* วงแหวนพลังงานหมุนๆ */
-    .planet-ring {
-        position: absolute;
-        width: 100%;
-        height: 100%;
-        border-radius: 50%;
-        border: 2px solid transparent;
-        border-top-color: var(--neon-cyan);
-        border-bottom-color: var(--neon-pink);
-        animation: spinRing 2s linear infinite;
-        box-shadow: 0 0 10px rgba(0, 242, 255, 0.3);
-    }
-
-    .planet-ring::before {
-        content: '';
-        position: absolute;
-        top: 5px; left: 5px; right: 5px; bottom: 5px;
-        border-radius: 50%;
-        border: 2px solid transparent;
-        border-left-color: var(--neon-pink);
-        border-right-color: var(--neon-cyan);
-        animation: spinRing 3s linear infinite reverse;
-    }
-
-    /* ตัวดาวแมว */
-    .planet-body {
-        position: absolute;
-        width: 50px;
-        height: 50px;
-        background: radial-gradient(circle at 30% 30%, var(--neon-cyan), #000);
-        border-radius: 50%;
-        box-shadow: inset -5px -5px 10px rgba(0,0,0,0.5), 0 0 15px var(--neon-cyan);
-        animation: pulseOrb 2s ease-in-out infinite alternate;
-    }
-
-    /* หูแมวที่งอกออกมาจากดาว */
-    .cat-ear {
-        position: absolute;
-        top: -8px;
-        width: 0;
-        height: 0;
-        border-left: 10px solid transparent;
-        border-right: 10px solid transparent;
-        border-bottom: 15px solid var(--neon-cyan);
-        filter: drop-shadow(0 0 5px var(--neon-cyan));
-    }
-    .cat-ear.left { left: 5px; transform: rotate(-25deg); }
-    .cat-ear.right { right: 5px; transform: rotate(25deg); }
-
-    /* Animation Keyframes */
-    @keyframes spinRing {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-    }
-
-    @keyframes pulseOrb {
-        0% { transform: scale(0.95); box-shadow: 0 0 10px var(--neon-cyan); }
-        100% { transform: scale(1.05); box-shadow: 0 0 25px var(--neon-cyan), 0 0 10px var(--neon-pink); }
-    }
-    
-    
-    
+        #hiddenOutput { position: absolute; opacity: 0; pointer-events: none; }
+        .particle { position: absolute; width: 6px; height: 6px; background: var(--neon-cyan); border-radius: 50%; pointer-events: none; z-index: 100; box-shadow: 0 0 10px var(--neon-cyan); }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--neon-cyan); border-radius: 3px; }
     </style>
 </head>
 <body>
-    <canvas id="starCanvas"></canvas>
-    <div class="nebula"></div>
-    <div id="astroLayer"></div>
-    <div id="rocketLayer"></div>
 
-    <div class="app-container">
-        <header>
-            <div class="brand"><h1>RCP Extractor</h1><span>CAT CAT CAT CAT</span></div>
-            <div class="toggle-btn" id="extToggle" onclick="toggleExt()"><div class="t-dot"></div><span style="font-weight: 600;">Keep .mp4</span></div>
-        </header>
-        <div class="workspace" id="workspace">
-            <div class="drop-zone" id="dropZone">
-                <div class="drop-icon">
-                    <div class="planet-container">
-                        <div class="planet-ring"></div>
-                        <div class="planet-body">
-                            <div class="cat-ear left"></div>
-                            <div class="cat-ear right"></div>
+    <canvas id="warpCanvas"></canvas>
+    <div id="swarmLayer"></div>
+
+    <div id="shake-layout">
+        <div class="holo-interface" id="mainUI">
+            <header>
+                <div class="brand">
+                    <h1 data-text="RCP Extractor">RCP Extractor</h1>
+                    <span>Cats Rule The World</span>
+                </div>
+                <div class="toggle-switch" id="extToggle" onclick="toggleExt()">
+                    <div class="t-dot"></div>
+                    <span style="font-size: 0.8rem; font-weight: 700;">KEEP .MP4</span>
+                </div>
+            </header>
+
+            <div class="workspace" id="workspace">
+                <div class="drop-portal" id="dropZone">
+                    <div class="nyan-unit">
+                        <div class="nyan-scale">
+                            <div class="n-rainbow"></div><div class="n-tail"></div><div class="n-legs"></div>
+                            <div class="n-body"><div class="n-body-pink"><div class="n-sprinkles"></div></div></div>
+                            <div class="n-head"><div class="n-ear-l"></div><div class="n-ear-r"></div><div class="n-face"></div></div>
                         </div>
                     </div>
-                </div>
-                <div class="drop-text">
-                    <h3>Drag Files Here</h3>
-                    <p>Cats will take over the world</p>
-                </div>
-                <input type="file" id="fileInput" multiple style="display:none">
-            </div>
-            
-            <div class="list-area">
-                <div id="fileListDisplay"></div>
-            </div>
-        </div>
-        <textarea id="hiddenOutput"></textarea>
-        <div class="control-bar">
-            <div style="font-family: var(--font-code); color: var(--text-muted);" id="fileCount">WAITING FOR Video...</div>
-            <div style="display: flex; gap: 15px;"><button class="btn btn-clear" onclick="clearText()">CLEAR</button><button class="btn btn-copy" id="copyBtn" onclick="copyText()">COPY</button></div>
-        </div>
-    </div>
-
-<template id="nyanTemplate">
-    <div class="nyan-box">
-        <div class="jetpack"><div class="thruster left"></div><div class="thruster right"></div><div class="flame left"></div><div class="flame right"></div></div>
-        <div class="limb arm left"></div><div class="limb arm right"></div>
-        <div class="limb leg left"></div><div class="limb leg right"></div>
-        <div class="suit-body"><div class="chest-panel"></div></div>
-        <div class="helmet">
-            <div class="visor-glass">
-                <div class="reflection"></div>
-                <div class="cat-head">
-                    <div class="cat-ears"><div class="ear left"></div><div class="ear right"></div></div>
-                    <div class="stripe"></div>
-                    <div class="face-features">
-                        <div class="eyes-row"><div class="eye"></div><div class="eye"></div></div>
-                        <div class="snout"><div class="nose"></div><div class="mouth"></div></div>
-                        <div class="blush left"></div><div class="blush right"></div>
+                    <div class="drop-hint">
+                        <h3>DROP FILES HERE</h3>
+                        <p>FEED THE VOID</p>
                     </div>
+                    <input type="file" id="fileInput" multiple style="display:none">
+                </div>
+
+                <div class="data-list">
+                    <div id="fileListDisplay"></div>
                 </div>
             </div>
+
+            <div class="control-bar">
+                <div class="status" id="statusDisplay"><div class="dot"></div>WAITING FOR DATA...</div>
+                <div class="btn-group">
+                    <button class="btn btn-clear" onclick="clearText()">NUKE</button>
+                    <button class="btn btn-warp" id="copyBtn" onclick="copyText()">COPY & WARP</button>
+                </div>
+            </div>
+            <textarea id="hiddenOutput"></textarea>
         </div>
     </div>
-</template>
 
 <script>
+    /* =========================================
+       1. NEON STAR ENGINE
+       ========================================= */
+    const canvas = document.getElementById('warpCanvas');
+    const ctx = canvas.getContext('2d');
+    let width, height, stars = [];
+    let warpSpeed = 1;
+    let targetWarpSpeed = 1;
 
-    // --- 1. MOUSE TRAIL ---
-    const colors = ['#00f2ff', '#ff00de', '#ffffff', '#ffd700'];
-    document.addEventListener('mousemove', (e) => {
-        if(Math.random() > 0.6) return; // ลดจำนวนลงหน่อยจะได้ไม่แลค
-        const p = document.createElement('div');
-        p.className = 'mouse-particle';
-        p.style.left = e.pageX + 'px'; p.style.top = e.pageY + 'px';
-        p.style.background = colors[Math.floor(Math.random() * colors.length)];
-        p.style.boxShadow = `0 0 10px ${p.style.background}`;
-        document.body.appendChild(p);
-        setTimeout(() => p.remove(), 600);
-    });
+    function resize() {
+        width = window.innerWidth;
+        height = window.innerHeight;
+        canvas.width = width;
+        canvas.height = height;
+    }
+    window.addEventListener('resize', resize);
+    resize();
 
-    // --- 2. GLITCH TITLE ---
-    const titleH1 = document.querySelector('.brand h1');
-    titleH1.setAttribute('data-text', titleH1.innerText);
-    setInterval(() => {
-        if(Math.random() > 0.75) {
-            titleH1.classList.add('glitch-active');
-            setTimeout(() => titleH1.classList.remove('glitch-active'), 200 + Math.random() * 300);
+    class Star {
+        constructor() {
+            this.x = Math.random() * width - width / 2;
+            this.y = Math.random() * height - height / 2;
+            this.z = Math.random() * width; 
+            this.pz = this.z;
+            this.color = ['#00f3ff', '#bc13fe', '#ccff00', '#ffffff', '#ff0099'][Math.floor(Math.random() * 5)];
+            this.blinkSpeed = Math.random() * 0.05 + 0.02;
+            this.blinkOffset = Math.random() * 100;
         }
-    }, 2500);
+        update() {
+            this.z -= warpSpeed;
+            if (this.z < 1) {
+                this.z = width;
+                this.x = Math.random() * width - width / 2;
+                this.y = Math.random() * height - height / 2;
+                this.pz = this.z;
+            }
+        }
+        draw() {
+            const sx = (this.x / this.z) * width/2 + width / 2;
+            const sy = (this.y / this.z) * height/2 + height / 2;
+            const px = (this.x / this.pz) * width/2 + width / 2;
+            const py = (this.y / this.pz) * height/2 + height / 2;
+            this.pz = this.z;
 
-    // --- 3. DROP ZONE & NYAN EXPLOSION (แก้ใหม่) ---
-    const dz = document.getElementById('dropZone');
-    const nyanTemplate = document.getElementById('nyanTemplate');
+            const r = (1 - this.z / width);
+            const twinkle = Math.sin((Date.now() / 200) + this.blinkOffset) * 0.5 + 0.5;
+            const alpha = warpSpeed > 10 ? 1 : 0.3 + (twinkle * 0.7); 
 
-    dz.addEventListener('dragenter', () => dz.classList.add('warp-active'));
-    dz.addEventListener('dragleave', () => dz.classList.remove('warp-active'));
-    
-    dz.addEventListener('drop', (e) => {
-        dz.classList.remove('warp-active');
-        // เรียกแมวระเบิด ณ จุดที่เมาส์ปล่อย
-        spawnNyanStorm(e.clientX, e.clientY);
-    });
-    
-    // Support การกด Browse ไฟล์ด้วย
-    document.getElementById('fileInput').addEventListener('change', () => {
-        const rect = dz.getBoundingClientRect();
-        // ให้ระเบิดกลางจอ
-        spawnNyanStorm(rect.left + rect.width/2, rect.top + rect.height/2);
-    });
-
-    function spawnNyanStorm(x, y) {
-        // จำนวนแมว (เบิ้มๆ)
-        const count = 30; 
-        
-        for (let i = 0; i < count; i++) {
-            const wrapper = document.createElement('div');
-            wrapper.className = 'nyan-boom';
+            ctx.beginPath();
+            ctx.moveTo(px, py);
+            ctx.lineTo(sx, sy);
+            ctx.strokeStyle = this.color;
+            ctx.globalAlpha = alpha;
             
-            // ตั้งตำแหน่งเริ่มต้นที่เมาส์
-            wrapper.style.left = x + 'px';
-            wrapper.style.top = y + 'px';
-
-            // Clone รูปแมวจาก Template เดิม
-            const clone = nyanTemplate.content.cloneNode(true);
-            wrapper.appendChild(clone);
-
-            // คำนวณทิศทางสุ่มแบบ 360 องศา
-            const angle = Math.random() * Math.PI * 2;
-            const velocity = 200 + Math.random() * 600; // ความไกลที่จะบินไป (px)
-            const tx = Math.cos(angle) * velocity + 'px'; // ปลายทาง X
-            const ty = Math.sin(angle) * velocity + 'px'; // ปลายทาง Y
-            
-            // สุ่มการหมุน
-            const rotStart = (Math.random() * 40 - 20) + 'deg';
-            const rotEnd = (Math.random() * 720 - 360) + 'deg'; // หมุน 1-2 รอบ
-
-            // ส่งค่าเข้า CSS Variables
-            wrapper.style.setProperty('--tx', tx);
-            wrapper.style.setProperty('--ty', ty);
-            wrapper.style.setProperty('--rot-start', rotStart);
-            wrapper.style.setProperty('--rot-end', rotEnd);
-
-            // กำหนดความเร็วอนิเมชั่น (ไม่พร้อมกัน ให้ดู chaotic)
-            const duration = 0.8 + Math.random() * 0.5;
-            wrapper.style.animation = `chaosFly ${duration}s cubic-bezier(0.1, 0.7, 0.1, 1) forwards`;
-
-            document.body.appendChild(wrapper);
-
-            // ลบเมื่อเล่นเสร็จ
-            setTimeout(() => wrapper.remove(), duration * 1000);
+            if (warpSpeed > 10) {
+                ctx.lineWidth = r * 3; ctx.shadowBlur = 0; 
+            } else {
+                ctx.lineWidth = r * 3; ctx.shadowColor = this.color; ctx.shadowBlur = 10;
+            }
+            ctx.stroke();
+            ctx.shadowBlur = 0; ctx.globalAlpha = 1;
         }
     }
 
-    // --- 4. ROCKET LAUNCH SHAKE (แก้ตามสั่ง: ไม่เอาแสงขาว) ---
-    const originalCopy = window.copyText;
-    window.copyText = function() {
-        originalCopy(); 
+    for (let i = 0; i < 600; i++) stars.push(new Star());
 
-        // สั่นอย่างเดียว
-        const container = document.querySelector('.app-container');
-        container.classList.add('shake-hard');
+    function animateWarp() {
+        ctx.fillStyle = 'rgba(2, 2, 5, 0.4)'; 
+        ctx.fillRect(0, 0, width, height);
+        warpSpeed += (targetWarpSpeed - warpSpeed) * 0.05;
+        stars.forEach(s => { s.update(); s.draw(); });
+        requestAnimationFrame(animateWarp);
+    }
+    animateWarp();
+
+    /* =========================================
+       2. SWARM LOGIC (CHAOS MODE)
+       ========================================= */
+    const swarmLayer = document.getElementById('swarmLayer');
+    function createMiniNyan() {
+        const wrap = document.createElement('div');
+        wrap.className = 'flying-nyan';
+        wrap.innerHTML = `
+            <div class="nyan-unit" style="transform: scale(0.6);">
+                <div class="nyan-scale">
+                    <div class="n-rainbow"></div><div class="n-tail"></div><div class="n-legs"></div>
+                    <div class="n-body"><div class="n-body-pink"><div class="n-sprinkles"></div></div></div>
+                    <div class="n-head"><div class="n-ear-l"></div><div class="n-ear-r"></div><div class="n-face"></div></div>
+                </div>
+            </div>`;
+        return wrap;
+    }
+
+    function spawnSwarm(aggressive = false) {
+        const cat = createMiniNyan();
+        swarmLayer.appendChild(cat);
+        const startX = (Math.random() - 0.5) * width * 2;
+        const startY = (Math.random() - 0.5) * height * 2;
+        const startZ = -2000;
+        const endX = startX * 0.5;
+        const endY = startY * 0.5;
+        const endZ = 1000;
+        const duration = aggressive ? Math.random()*500 + 500 : Math.random()*3000 + 2000;
+        const rotEnd = Math.random() * 360; 
+
+        cat.animate([
+            { transform: `translate3d(${startX}px, ${startY}px, ${startZ}px) rotateZ(0deg)`, opacity: 0 },
+            { opacity: 1, offset: 0.1 },
+            { transform: `translate3d(${endX}px, ${endY}px, ${endZ}px) rotateZ(${rotEnd}deg)`, opacity: 0 }
+        ], { duration: duration, easing: 'linear' }).onfinish = () => cat.remove();
+    }
+    setInterval(() => spawnSwarm(false), 250);
+
+    /* =========================================
+       3. PARTICLE EXPLOSION
+       ========================================= */
+    function createExplosion(x, y) {
+        const colors = ['#00f3ff', '#ff0099', '#bc13fe', '#fff'];
+        for(let i=0; i<30; i++) {
+            const p = document.createElement('div');
+            p.className = 'particle';
+            document.body.appendChild(p);
+            p.style.left = x + 'px'; p.style.top = y + 'px';
+            p.style.background = colors[Math.floor(Math.random()*colors.length)];
+            
+            const angle = Math.random() * Math.PI * 2;
+            const velocity = Math.random() * 100 + 50;
+            const tx = Math.cos(angle) * velocity;
+            const ty = Math.sin(angle) * velocity;
+            
+            p.animate([
+                { transform: `translate(0,0) scale(1)`, opacity: 1 },
+                { transform: `translate(${tx}px, ${ty}px) scale(0)`, opacity: 0 }
+            ], { duration: 600, easing: 'ease-out' }).onfinish = () => p.remove();
+        }
+    }
+
+    /* =========================================
+       4. APP LOGIC (IMPACT SHAKE & SUCTION)
+       ========================================= */
+    const dz = document.getElementById('dropZone');
+    const inp = document.getElementById('fileInput');
+    const ws = document.getElementById('workspace');
+    const list = document.getElementById('fileListDisplay');
+    const status = document.getElementById('statusDisplay');
+    const hiddenOutput = document.getElementById('hiddenOutput');
+    const mainUI = document.getElementById('mainUI');
+    const shakeLayout = document.getElementById('shake-layout');
+
+    let currentFiles = [];
+    let includeExt = false;
+    let dragCounter = 0;
+    let summonTimer;
+
+    // --- IMPACT FUNCTIONS ---
+    function triggerImpact() {
+        shakeLayout.classList.add('effect-shake');
+        mainUI.classList.add('effect-suction');
+        setTimeout(() => {
+            shakeLayout.classList.remove('effect-shake');
+            mainUI.classList.remove('effect-suction');
+        }, 500);
+    }
+
+    // --- DRAG EVENTS ---
+    dz.addEventListener('dragenter', (e) => {
+        e.preventDefault();
+        dragCounter++;
+        if (dragCounter === 1) {
+            dz.classList.add('drag-active');
+            targetWarpSpeed = 50; 
+            
+            // [NEW] START RUMBLE (Continuous Vibration)
+            shakeLayout.classList.add('effect-rumble');
+
+            // Chaos Summon
+            if(!summonTimer) summonTimer = setInterval(() => spawnSwarm(true), 50);
+        }
+    });
+
+    dz.addEventListener('dragleave', (e) => {
+        e.preventDefault();
+        dragCounter--;
+        if (dragCounter <= 0) {
+            dragCounter = 0;
+            dz.classList.remove('drag-active');
+            targetWarpSpeed = 1;
+            
+            // [NEW] STOP RUMBLE
+            shakeLayout.classList.remove('effect-rumble');
+
+            clearInterval(summonTimer);
+            summonTimer = null;
+        }
+    });
+
+    dz.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dragCounter = 0;
+        dz.classList.remove('drag-active');
+        clearInterval(summonTimer);
+        summonTimer = null;
+        targetWarpSpeed = 1;
         
-        // บิดสีนิดหน่อยให้รู้ว่ากด
-        document.body.style.filter = 'contrast(1.4) saturate(1.5)';
+        // [NEW] STOP RUMBLE -> TRIGGER IMPACT
+        shakeLayout.classList.remove('effect-rumble');
+        triggerImpact();
+        createExplosion(e.clientX, e.clientY);
+        
+        handleFiles(e.dataTransfer.files);
+    });
+
+    dz.addEventListener('dragover', (e) => e.preventDefault());
+    dz.addEventListener('click', () => inp.click());
+    inp.addEventListener('change', (e) => handleFiles(e.target.files));
+
+    function handleFiles(files) {
+        if (!files || !files.length) return;
+        currentFiles = Array.from(files);
+        render();
+        // Drop Impact Speed
+        targetWarpSpeed = 80; 
+        setTimeout(() => targetWarpSpeed = 1, 1000);
+    }
+
+    function render() {
+        if (currentFiles.length) {
+            ws.classList.add('active');
+            status.innerHTML = `<div class="dot" style="background:#0f0;box-shadow:0 0 10px #0f0;"></div> READY: ${currentFiles.length} FILES`;
+            status.classList.add('ready');
+            list.innerHTML = '';
+            const names = currentFiles.map(f => {
+                let n = f.name;
+                if (!includeExt) n = n.substring(0, n.lastIndexOf('.')) || n;
+                return n;
+            });
+            names.forEach(n => {
+                const item = document.createElement('div');
+                item.className = 'file-item';
+                item.innerHTML = `<span class="f-name">📄 ${n}</span>`;
+                list.appendChild(item);
+            });
+            hiddenOutput.value = names.join('\n');
+        } else {
+            resetUI();
+        }
+    }
+
+    function toggleExt() {
+        includeExt = !includeExt;
+        document.getElementById('extToggle').classList.toggle('active');
+        if (currentFiles.length) render();
+    }
+
+    function resetUI() {
+        currentFiles = [];
+        ws.classList.remove('active');
+        status.classList.remove('ready');
+        status.innerHTML = `<div class="dot"></div> WAITING FOR DATA...`;
+        hiddenOutput.value = '';
+        list.innerHTML = '';
+        inp.value = '';
+    }
+
+    function clearText() {
+        resetUI();
+    }
+
+    function copyText() {
+        if (!hiddenOutput.value) return;
+        hiddenOutput.select();
+        document.execCommand('copy');
+        
+        const btn = document.getElementById('copyBtn');
+        const old = btn.innerText;
+        btn.innerText = "COPIED SUCCESSFULLY";
+        btn.style.background = "#fff";
+        btn.style.color = "#000";
+        
+        // NO SHAKE, JUST WARP SPEED
+        targetWarpSpeed = 150;
+        for(let i=0; i<40; i++) setTimeout(() => spawnSwarm(true), i*20);
 
         setTimeout(() => {
-            container.classList.remove('shake-hard');
-            document.body.style.filter = '';
-        }, 500);
-    };
-    // --- APP LOGIC (UNCHANGED) ---
-    const dropZone = document.getElementById('dropZone'), fileInput = document.getElementById('fileInput'), workspace = document.getElementById('workspace'), fileListDisplay = document.getElementById('fileListDisplay'), hiddenOutput = document.getElementById('hiddenOutput'), extToggle = document.getElementById('extToggle'), copyBtn = document.getElementById('copyBtn'), fileCount = document.getElementById('fileCount');
-    let currentFiles = [], includeExt = false;
-    function toggleExt() { includeExt = !includeExt; extToggle.classList.toggle('active'); reProcess(); }
-    dropZone.addEventListener('click', () => fileInput.click());
-    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.style.borderColor = '#00f2ff'; dropZone.style.background = 'rgba(0,242,255,0.1)'; });
-    dropZone.addEventListener('dragleave', () => { dropZone.style.borderColor = ''; dropZone.style.background = ''; });
-    dropZone.addEventListener('drop', (e) => { e.preventDefault(); dropZone.style.borderColor = ''; dropZone.style.background = ''; handleFiles(e.dataTransfer.files); });
-    fileInput.addEventListener('change', (e) => { handleFiles(e.target.files); fileInput.value = ''; });
-    function handleFiles(files) { if (files.length === 0) return; currentFiles = Array.from(files); renderUI(); }
-    function renderUI() {
-        if (currentFiles.length > 0) { workspace.classList.add('has-files'); fileCount.innerHTML = `DETECTED: <span style="color:var(--neon-cyan)">${currentFiles.length} OBJECTS</span>`; } else { workspace.classList.remove('has-files'); fileListDisplay.innerHTML = ''; fileCount.innerText = 'WAITING FOR Video...'; return; }
-        const nameList = currentFiles.map(file => { let name = file.name; if (!includeExt) name = name.substring(0, name.lastIndexOf('.')) || name; return name; });
-        hiddenOutput.value = nameList.join('\n'); fileListDisplay.innerHTML = '';
-        nameList.forEach((name, index) => { const item = document.createElement('div'); item.className = 'file-item'; item.style.animation = `slideIn 0.3s forwards ${index * 0.05}s`; item.style.opacity = '0'; item.innerHTML = `<span class="f-idx">${index + 1}</span><span class="f-name">${name}</span>`; fileListDisplay.appendChild(item); });
-        if(!document.getElementById('slideInStyle')) { const style = document.createElement('style'); style.id = 'slideInStyle'; style.innerHTML = `@keyframes slideIn { from { opacity:0; transform:translateX(-10px); } to { opacity:1; transform:translateX(0); } }`; document.head.appendChild(style); }
-    }
-    function reProcess() { if (currentFiles.length > 0) renderUI(); }
-    function copyText() { if (!hiddenOutput.value) return; hiddenOutput.select(); document.execCommand('copy'); hiddenOutput.setSelectionRange(0, 0); launchCatSquadron(); }
-    function clearText() { currentFiles = []; renderUI(); }
-
-    // --- BACKGROUND STARS ---
-    const canvas = document.getElementById('starCanvas'), ctx = canvas.getContext('2d'); let width, height, stars = [];
-    function initStars() { width = window.innerWidth; height = window.innerHeight; canvas.width = width; canvas.height = height; stars = []; for(let i=0; i<200; i++) stars.push({ x: Math.random()*width, y: Math.random()*height, size: Math.random()*2, speed: Math.random()*0.2 + 0.05 }); }
-    function animateStars() { ctx.clearRect(0, 0, width, height); ctx.fillStyle = 'white'; stars.forEach(star => { ctx.globalAlpha = Math.random()*0.5+0.5; ctx.beginPath(); ctx.arc(star.x, star.y, star.size, 0, Math.PI*2); ctx.fill(); star.y -= star.speed; if(star.y < 0) star.y = height; }); requestAnimationFrame(animateStars); }
-    window.addEventListener('resize', initStars); initStars(); animateStars();
-
-    // --- CSS ASTRO-NYAN GENERATOR ---
-    const astroLayer = document.getElementById('astroLayer');
-    const template = document.getElementById('nyanTemplate');
-
-    function spawnBackgroundCats() {
-        // Spawn 15 Floating Cats
-        for(let i=0; i<15; i++) {
-            createFloatingNyan();
-        }
-    }
-
-    function createFloatingNyan() {
-        const wrapper = document.createElement('div');
-        wrapper.className = 'astro-nyan-wrapper';
-        
-        // Clone CSS Art
-        const clone = template.content.cloneNode(true);
-        wrapper.appendChild(clone);
-
-        // Random Properties
-        const scale = Math.random() * 0.4 + 0.3; // Scale 0.3 - 0.7
-        wrapper.style.transform = `scale(${scale})`;
-        wrapper.style.opacity = Math.random() * 0.5 + 0.4;
-        
-        // Random Animation
-        const duration = Math.random() * 40 + 30; // 30s - 70s float
-        const animName = `float_${Math.random().toString(36).substr(2, 9)}`;
-        const startX = Math.random() * 100;
-        const startY = Math.random() * 100;
-        
-        const keyframes = `
-            @keyframes ${animName} {
-                0% { transform: translate(${Math.random()*100}vw, ${Math.random()*100}vh) rotate(-10deg) scale(${scale}); }
-                33% { transform: translate(${Math.random()*100}vw, ${Math.random()*100}vh) rotate(15deg) scale(${scale}); }
-                66% { transform: translate(${Math.random()*100}vw, ${Math.random()*100}vh) rotate(-20deg) scale(${scale}); }
-                100% { transform: translate(${Math.random()*100}vw, ${Math.random()*100}vh) rotate(10deg) scale(${scale}); }
-            }
-        `;
-        const styleSheet = document.createElement("style"); styleSheet.innerText = keyframes; document.head.appendChild(styleSheet);
-        
-        wrapper.style.animation = `${animName} ${duration}s infinite linear alternate`;
-        astroLayer.appendChild(wrapper);
-    }
-
-    spawnBackgroundCats();
-
-    // --- LAUNCH EFFECT (SQUAD) ---
-    function launchCatSquadron() {
-        const rocketLayer = document.getElementById('rocketLayer');
-        const squadSize = 20;
-
-        for (let i = 0; i < squadSize; i++) {
-            setTimeout(() => {
-                const wrapper = document.createElement('div');
-                wrapper.className = 'squad-cat'; // Absolute positioned at bottom
-                wrapper.style.width = '120px'; wrapper.style.height = '150px'; // Set base size
-                
-                // Clone the same CSS Art for uniformity
-                const clone = template.content.cloneNode(true);
-                wrapper.appendChild(clone);
-                
-                // Randomize Launch
-                const leftPos = Math.random() * 90 + 5;
-                wrapper.style.left = `${leftPos}%`;
-                
-                const scale = Math.random() * 0.5 + 0.5; // Bigger than background
-                // We set transform in animation, but need initial scale
-                
-                rocketLayer.appendChild(wrapper);
-
-                const speed = Math.random() * 1500 + 1000; // 1s - 2.5s
-                const rot = Math.random() * 40 - 20; // -20 to 20 deg tilt
-
-                const animation = wrapper.animate([
-                    { transform: `translate(-50%, 100vh) scale(${scale}) rotate(0deg)`, opacity: 0 },
-                    { transform: `translate(-50%, 50vh) scale(${scale}) rotate(${rot}deg)`, opacity: 1, offset: 0.2 },
-                    { transform: `translate(-50%, -120vh) scale(${scale * 1.2}) rotate(${rot * 2}deg)`, opacity: 1 }
-                ], { duration: speed, easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)' });
-
-                animation.onfinish = () => wrapper.remove();
-            }, i * 60);
-        }
-
-        const oldText = copyBtn.innerHTML; copyBtn.innerHTML = 'Wiiiiiii!!'; copyBtn.style.background = 'var(--neon-pink)';
-        setTimeout(() => { copyBtn.innerHTML = oldText; copyBtn.style.background = ''; }, 2000);
+            targetWarpSpeed = 1;
+            btn.innerText = old;
+            btn.style.background = "";
+            btn.style.color = "";
+        }, 1500);
     }
 </script>
 </body>
