@@ -42,6 +42,7 @@
             overflow: hidden; 
             display: flex; justify-content: center; align-items: center; 
             perspective: 1500px;
+            cursor: default;
         }
 
         /* 1. NEON STAR ENGINE */
@@ -88,7 +89,7 @@
 
         /* --- ANIMATIONS --- */
         
-        /* 1. RUMBLE LOOP (New! สั่นตลอดตอนลาก) */
+        /* 1. RUMBLE LOOP */
         .effect-rumble {
             animation: rumbleLoop 0.1s linear infinite;
         }
@@ -100,7 +101,7 @@
             100% { transform: translate(2px, 1px) rotate(0.3deg); }
         }
 
-        /* 2. IMPACT SHAKE (สั่นแรงตอนปล่อย) */
+        /* 2. IMPACT SHAKE */
         .effect-shake {
             animation: shakeHard 0.5s cubic-bezier(.36,.07,.19,.97) both;
         }
@@ -111,7 +112,7 @@
             40%, 60% { transform: translate3d(10px, 0, 0); }
         }
 
-        /* 3. SUCTION (ดูดวูบ) */
+        /* 3. SUCTION */
         .effect-suction {
             animation: suctionWarp 0.4s ease-in-out forwards;
         }
@@ -189,6 +190,19 @@
             100% { border-color: rgba(188, 19, 254, 0.5); box-shadow: inset 0 0 50px rgba(188, 19, 254, 0.1); }
         }
 
+        /* [NEW] HOVER EFFECT (AWAKENING) */
+        .drop-portal:hover {
+            border-color: var(--neon-cyan);
+            background: radial-gradient(circle at center, rgba(0, 243, 255, 0.15) 0%, rgba(20, 10, 40, 0.7) 100%);
+            box-shadow: 0 0 50px rgba(0, 243, 255, 0.3), inset 0 0 30px rgba(0, 243, 255, 0.1);
+            transform: scale(1.02);
+        }
+        .drop-portal:hover .nyan-unit {
+            transform: scale(1.2) translateY(-15px); /* แมวลอยขึ้น */
+            filter: drop-shadow(0 0 20px var(--neon-cyan)); /* แมวเรืองแสง */
+            transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
         .drop-portal.drag-active {
             border-color: var(--neon-cyan); 
             background: radial-gradient(circle at center, rgba(0, 243, 255, 0.2), #000);
@@ -249,6 +263,18 @@
 
         #hiddenOutput { position: absolute; opacity: 0; pointer-events: none; }
         .particle { position: absolute; width: 6px; height: 6px; background: var(--neon-cyan); border-radius: 50%; pointer-events: none; z-index: 100; box-shadow: 0 0 10px var(--neon-cyan); }
+        
+        /* [NEW] NEON MOUSE TRAIL */
+        .trail-dot {
+            position: fixed; pointer-events: none;
+            width: 6px; height: 6px; border-radius: 50%;
+            background: var(--neon-cyan);
+            box-shadow: 0 0 10px var(--neon-cyan), 0 0 20px var(--neon-magenta);
+            animation: fadeTrail 0.5s linear forwards;
+            z-index: 9999;
+        }
+        @keyframes fadeTrail { 0% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: scale(0.2); } }
+
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: var(--neon-cyan); border-radius: 3px; }
@@ -306,13 +332,14 @@
 
 <script>
     /* =========================================
-       1. NEON STAR ENGINE
+       1. NEON STAR ENGINE + MADNESS (LITE)
        ========================================= */
     const canvas = document.getElementById('warpCanvas');
     const ctx = canvas.getContext('2d');
     let width, height, stars = [];
     let warpSpeed = 1;
     let targetWarpSpeed = 1;
+    let mouseVelocity = 0; // Added for Madness
 
     function resize() {
         width = window.innerWidth;
@@ -334,7 +361,8 @@
             this.blinkOffset = Math.random() * 100;
         }
         update() {
-            this.z -= warpSpeed;
+            // Speed = Base + Boost + MouseVelocity (Capped)
+            this.z -= (warpSpeed + mouseVelocity);
             if (this.z < 1) {
                 this.z = width;
                 this.x = Math.random() * width - width / 2;
@@ -374,14 +402,43 @@
     function animateWarp() {
         ctx.fillStyle = 'rgba(2, 2, 5, 0.4)'; 
         ctx.fillRect(0, 0, width, height);
+        
         warpSpeed += (targetWarpSpeed - warpSpeed) * 0.05;
+        mouseVelocity *= 0.92; // Decay madness
+
         stars.forEach(s => { s.update(); s.draw(); });
         requestAnimationFrame(animateWarp);
     }
     animateWarp();
 
     /* =========================================
-       2. SWARM LOGIC (CHAOS MODE)
+       2. MOUSE TRAIL & MADNESS INPUT
+       ========================================= */
+    let lastMouseX = 0, lastMouseY = 0;
+    
+    document.addEventListener('mousemove', (e) => {
+        // 1. Trail Logic (Optimized)
+        if (Math.random() < 0.6) {
+            const dot = document.createElement('div');
+            dot.className = 'trail-dot';
+            dot.style.left = e.clientX + 'px';
+            dot.style.top = e.clientY + 'px';
+            dot.style.background = Math.random() > 0.5 ? 'var(--neon-cyan)' : 'var(--neon-magenta)';
+            document.body.appendChild(dot);
+            setTimeout(() => dot.remove(), 500);
+        }
+
+        // 2. Velocity Logic (Capped at 8 to not be too crazy)
+        const deltaX = Math.abs(e.clientX - lastMouseX);
+        const deltaY = Math.abs(e.clientY - lastMouseY);
+        mouseVelocity = Math.min(Math.sqrt(deltaX**2 + deltaY**2) * 0.1, 8);
+        
+        lastMouseX = e.clientX;
+        lastMouseY = e.clientY;
+    });
+
+    /* =========================================
+       3. SWARM LOGIC (CHAOS MODE)
        ========================================= */
     const swarmLayer = document.getElementById('swarmLayer');
     function createMiniNyan() {
@@ -419,7 +476,7 @@
     setInterval(() => spawnSwarm(false), 250);
 
     /* =========================================
-       3. PARTICLE EXPLOSION
+       4. PARTICLE EXPLOSION
        ========================================= */
     function createExplosion(x, y) {
         const colors = ['#00f3ff', '#ff0099', '#bc13fe', '#fff'];
@@ -443,7 +500,7 @@
     }
 
     /* =========================================
-       4. APP LOGIC (IMPACT SHAKE & SUCTION)
+       5. APP LOGIC (IMPACT SHAKE & SUCTION)
        ========================================= */
     const dz = document.getElementById('dropZone');
     const inp = document.getElementById('fileInput');
@@ -477,7 +534,7 @@
             dz.classList.add('drag-active');
             targetWarpSpeed = 50; 
             
-            // [NEW] START RUMBLE (Continuous Vibration)
+            // [NEW] START RUMBLE
             shakeLayout.classList.add('effect-rumble');
 
             // Chaos Summon
