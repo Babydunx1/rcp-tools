@@ -10,6 +10,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=JetBrains+Mono:wght@400;700&family=Sarabun:wght@400;600&display=swap" rel="stylesheet">
     
     <style>
+
+        
         :root {
             /* Universe Palette */
             --bg-deep: #02020a;
@@ -227,6 +229,158 @@
         .t-dot { width: 12px; height: 12px; background: #555; border-radius: 50%; transition: 0.3s; }
         .toggle-btn.active .t-dot { background: var(--neon-cyan); box-shadow: 0 0 10px var(--neon-cyan); }
         #hiddenOutput { position: absolute; left: -9999px; }
+
+        
+
+        /* --- 1. EFFECTS (คงเดิม) --- */
+    @keyframes glitch-anim-1 {
+        0% { clip-path: inset(20% 0 80% 0); transform: translate(-2px, 1px); }
+        20% { clip-path: inset(60% 0 10% 0); transform: translate(2px, -1px); }
+        40% { clip-path: inset(40% 0 50% 0); transform: translate(-2px, 2px); }
+        60% { clip-path: inset(80% 0 5% 0); transform: translate(2px, -2px); }
+        80% { clip-path: inset(10% 0 70% 0); transform: translate(-1px, 1px); }
+        100% { clip-path: inset(30% 0 60% 0); transform: translate(1px, -1px); }
+    }
+    .glitch-active { position: relative; }
+    .glitch-active::before, .glitch-active::after {
+        content: attr(data-text); position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-deep);
+    }
+    .glitch-active::before {
+        left: 2px; text-shadow: -1px 0 #ff00de; clip: rect(24px, 550px, 90px, 0);
+        animation: glitch-anim-1 0.3s infinite linear alternate-reverse;
+    }
+    .glitch-active::after {
+        left: -2px; text-shadow: -1px 0 #00f2ff; clip: rect(85px, 550px, 140px, 0);
+        animation: glitch-anim-1 0.3s infinite linear alternate-reverse; animation-delay: -0.1s;
+    }
+
+    /* --- 2. DROP ZONE WARP (คงเดิม) --- */
+    .drop-zone.warp-active {
+        border-color: var(--neon-pink) !important;
+        background: rgba(255, 0, 222, 0.15) !important;
+        box-shadow: 0 0 50px var(--neon-pink), inset 0 0 20px var(--neon-pink);
+        transform: scale(1.02);
+    }
+    .drop-zone.warp-active .drop-icon { animation: spinHole 0.5s infinite linear !important; font-size: 100px; color: var(--neon-pink); }
+    @keyframes spinHole { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    /* --- 3. MOUSE TRAIL (คงเดิม) --- */
+    .mouse-particle {
+        position: absolute; pointer-events: none; z-index: 9999; width: 6px; height: 6px; border-radius: 50%;
+        background: white; box-shadow: 0 0 6px white; animation: fadeParticle 0.6s forwards;
+    }
+    @keyframes fadeParticle { 0% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: scale(0) translate(0, 20px); } }
+
+    /* --- 4. SHAKE (คงเดิม) --- */
+    .shake-hard { animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; }
+    @keyframes shake {
+        10%, 90% { transform: translate3d(-2px, 2px, 0) rotate(1deg); }
+        20%, 80% { transform: translate3d(4px, -4px, 0) rotate(-1deg); }
+        30%, 50%, 70% { transform: translate3d(-8px, 6px, 0) rotate(2deg); }
+        40%, 60% { transform: translate3d(8px, -6px, 0) rotate(-2deg); }
+    }
+
+    /* --- 5. NYAN STORM (แก้ใหม่ให้เห็นชัดๆ) --- */
+    .nyan-boom {
+        position: fixed; /* ใช้ fixed เพื่อให้หลุดจาก container เดิม */
+        z-index: 10000; /* ทับทุกเลเยอร์ */
+        width: 120px; /* บังคับขนาดให้ใหญ่พอ */
+        height: 140px;
+        pointer-events: none;
+        will-change: transform;
+        /* เริ่มต้นที่จุดกลาง (จะถูก override ด้วย JS) */
+        left: 0; top: 0;
+    }
+    
+    /* อนิเมชั่นแมวบินว่อน */
+    @keyframes chaosFly {
+        0% {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(0.2) rotate(0deg);
+        }
+        20% {
+             /* ขยายตัวอย่างรวดเร็ว */
+            transform: translate(-50%, -50%) scale(1.5) rotate(var(--rot-start));
+        }
+        100% {
+            opacity: 0;
+            /* บินไปตามทิศทางที่สุ่มไว้ (tx, ty) + หมุนติ้ว (rot-end) */
+            transform: translate(var(--tx), var(--ty)) scale(0) rotate(var(--rot-end));
+        }
+    }
+
+    /* --- Nyan-Orb Animation (Lightweight) --- */
+    .planet-container {
+        position: relative;
+        width: 80px;
+        height: 80px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    /* วงแหวนพลังงานหมุนๆ */
+    .planet-ring {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        border: 2px solid transparent;
+        border-top-color: var(--neon-cyan);
+        border-bottom-color: var(--neon-pink);
+        animation: spinRing 2s linear infinite;
+        box-shadow: 0 0 10px rgba(0, 242, 255, 0.3);
+    }
+
+    .planet-ring::before {
+        content: '';
+        position: absolute;
+        top: 5px; left: 5px; right: 5px; bottom: 5px;
+        border-radius: 50%;
+        border: 2px solid transparent;
+        border-left-color: var(--neon-pink);
+        border-right-color: var(--neon-cyan);
+        animation: spinRing 3s linear infinite reverse;
+    }
+
+    /* ตัวดาวแมว */
+    .planet-body {
+        position: absolute;
+        width: 50px;
+        height: 50px;
+        background: radial-gradient(circle at 30% 30%, var(--neon-cyan), #000);
+        border-radius: 50%;
+        box-shadow: inset -5px -5px 10px rgba(0,0,0,0.5), 0 0 15px var(--neon-cyan);
+        animation: pulseOrb 2s ease-in-out infinite alternate;
+    }
+
+    /* หูแมวที่งอกออกมาจากดาว */
+    .cat-ear {
+        position: absolute;
+        top: -8px;
+        width: 0;
+        height: 0;
+        border-left: 10px solid transparent;
+        border-right: 10px solid transparent;
+        border-bottom: 15px solid var(--neon-cyan);
+        filter: drop-shadow(0 0 5px var(--neon-cyan));
+    }
+    .cat-ear.left { left: 5px; transform: rotate(-25deg); }
+    .cat-ear.right { right: 5px; transform: rotate(25deg); }
+
+    /* Animation Keyframes */
+    @keyframes spinRing {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    @keyframes pulseOrb {
+        0% { transform: scale(0.95); box-shadow: 0 0 10px var(--neon-cyan); }
+        100% { transform: scale(1.05); box-shadow: 0 0 25px var(--neon-cyan), 0 0 10px var(--neon-pink); }
+    }
+    
+    
+    
     </style>
 </head>
 <body>
@@ -241,8 +395,26 @@
             <div class="toggle-btn" id="extToggle" onclick="toggleExt()"><div class="t-dot"></div><span style="font-weight: 600;">Keep .mp4</span></div>
         </header>
         <div class="workspace" id="workspace">
-            <div class="drop-zone" id="dropZone"><div class="drop-icon">🪐</div><div class="drop-text"><h3>Drag Files Here</h3><p>Cats will take over the world</p></div><input type="file" id="fileInput" multiple style="display:none"></div>
-            <div class="list-area"><div id="fileListDisplay"></div></div>
+            <div class="drop-zone" id="dropZone">
+                <div class="drop-icon">
+                    <div class="planet-container">
+                        <div class="planet-ring"></div>
+                        <div class="planet-body">
+                            <div class="cat-ear left"></div>
+                            <div class="cat-ear right"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="drop-text">
+                    <h3>Drag Files Here</h3>
+                    <p>Cats will take over the world</p>
+                </div>
+                <input type="file" id="fileInput" multiple style="display:none">
+            </div>
+            
+            <div class="list-area">
+                <div id="fileListDisplay"></div>
+            </div>
         </div>
         <textarea id="hiddenOutput"></textarea>
         <div class="control-bar">
@@ -275,6 +447,110 @@
 </template>
 
 <script>
+
+    // --- 1. MOUSE TRAIL ---
+    const colors = ['#00f2ff', '#ff00de', '#ffffff', '#ffd700'];
+    document.addEventListener('mousemove', (e) => {
+        if(Math.random() > 0.6) return; // ลดจำนวนลงหน่อยจะได้ไม่แลค
+        const p = document.createElement('div');
+        p.className = 'mouse-particle';
+        p.style.left = e.pageX + 'px'; p.style.top = e.pageY + 'px';
+        p.style.background = colors[Math.floor(Math.random() * colors.length)];
+        p.style.boxShadow = `0 0 10px ${p.style.background}`;
+        document.body.appendChild(p);
+        setTimeout(() => p.remove(), 600);
+    });
+
+    // --- 2. GLITCH TITLE ---
+    const titleH1 = document.querySelector('.brand h1');
+    titleH1.setAttribute('data-text', titleH1.innerText);
+    setInterval(() => {
+        if(Math.random() > 0.75) {
+            titleH1.classList.add('glitch-active');
+            setTimeout(() => titleH1.classList.remove('glitch-active'), 200 + Math.random() * 300);
+        }
+    }, 2500);
+
+    // --- 3. DROP ZONE & NYAN EXPLOSION (แก้ใหม่) ---
+    const dz = document.getElementById('dropZone');
+    const nyanTemplate = document.getElementById('nyanTemplate');
+
+    dz.addEventListener('dragenter', () => dz.classList.add('warp-active'));
+    dz.addEventListener('dragleave', () => dz.classList.remove('warp-active'));
+    
+    dz.addEventListener('drop', (e) => {
+        dz.classList.remove('warp-active');
+        // เรียกแมวระเบิด ณ จุดที่เมาส์ปล่อย
+        spawnNyanStorm(e.clientX, e.clientY);
+    });
+    
+    // Support การกด Browse ไฟล์ด้วย
+    document.getElementById('fileInput').addEventListener('change', () => {
+        const rect = dz.getBoundingClientRect();
+        // ให้ระเบิดกลางจอ
+        spawnNyanStorm(rect.left + rect.width/2, rect.top + rect.height/2);
+    });
+
+    function spawnNyanStorm(x, y) {
+        // จำนวนแมว (เบิ้มๆ)
+        const count = 30; 
+        
+        for (let i = 0; i < count; i++) {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'nyan-boom';
+            
+            // ตั้งตำแหน่งเริ่มต้นที่เมาส์
+            wrapper.style.left = x + 'px';
+            wrapper.style.top = y + 'px';
+
+            // Clone รูปแมวจาก Template เดิม
+            const clone = nyanTemplate.content.cloneNode(true);
+            wrapper.appendChild(clone);
+
+            // คำนวณทิศทางสุ่มแบบ 360 องศา
+            const angle = Math.random() * Math.PI * 2;
+            const velocity = 200 + Math.random() * 600; // ความไกลที่จะบินไป (px)
+            const tx = Math.cos(angle) * velocity + 'px'; // ปลายทาง X
+            const ty = Math.sin(angle) * velocity + 'px'; // ปลายทาง Y
+            
+            // สุ่มการหมุน
+            const rotStart = (Math.random() * 40 - 20) + 'deg';
+            const rotEnd = (Math.random() * 720 - 360) + 'deg'; // หมุน 1-2 รอบ
+
+            // ส่งค่าเข้า CSS Variables
+            wrapper.style.setProperty('--tx', tx);
+            wrapper.style.setProperty('--ty', ty);
+            wrapper.style.setProperty('--rot-start', rotStart);
+            wrapper.style.setProperty('--rot-end', rotEnd);
+
+            // กำหนดความเร็วอนิเมชั่น (ไม่พร้อมกัน ให้ดู chaotic)
+            const duration = 0.8 + Math.random() * 0.5;
+            wrapper.style.animation = `chaosFly ${duration}s cubic-bezier(0.1, 0.7, 0.1, 1) forwards`;
+
+            document.body.appendChild(wrapper);
+
+            // ลบเมื่อเล่นเสร็จ
+            setTimeout(() => wrapper.remove(), duration * 1000);
+        }
+    }
+
+    // --- 4. ROCKET LAUNCH SHAKE (แก้ตามสั่ง: ไม่เอาแสงขาว) ---
+    const originalCopy = window.copyText;
+    window.copyText = function() {
+        originalCopy(); 
+
+        // สั่นอย่างเดียว
+        const container = document.querySelector('.app-container');
+        container.classList.add('shake-hard');
+        
+        // บิดสีนิดหน่อยให้รู้ว่ากด
+        document.body.style.filter = 'contrast(1.4) saturate(1.5)';
+
+        setTimeout(() => {
+            container.classList.remove('shake-hard');
+            document.body.style.filter = '';
+        }, 500);
+    };
     // --- APP LOGIC (UNCHANGED) ---
     const dropZone = document.getElementById('dropZone'), fileInput = document.getElementById('fileInput'), workspace = document.getElementById('workspace'), fileListDisplay = document.getElementById('fileListDisplay'), hiddenOutput = document.getElementById('hiddenOutput'), extToggle = document.getElementById('extToggle'), copyBtn = document.getElementById('copyBtn'), fileCount = document.getElementById('fileCount');
     let currentFiles = [], includeExt = false;
